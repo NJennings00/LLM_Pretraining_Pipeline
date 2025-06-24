@@ -1,0 +1,53 @@
+# filename: src/llm_pipeline/config/hydra/data/wikitext2.yaml
+# """
+# Configuration for the WikiText-2 raw dataset.
+
+# This YAML file specifies the parameters for loading and preprocessing the
+# WikiText-2 dataset, which is a common benchmark for language modeling.
+# It defines which splits to use, sequence length constraints, and multiprocessing
+# settings for data preparation.
+
+# Purpose:
+#     To encapsulate all data-specific configuration for the WikiText-2 dataset.
+#     This allows for easy switching between different datasets by simply changing
+#     the `data` default in the main `config.yaml`.
+#
+#     This configuration is crucial for:
+#     1.  **Data Source Definition:** Clearly specifies the dataset to be used.
+#     2.  **Preprocessing Control:** Sets parameters that directly influence
+#         how raw text is processed into model-ready sequences.
+#     3.  **Performance Tuning:** `num_workers` and `preprocessing_batch_size`
+#         affect the efficiency of data loading and preparation.
+#     4.  **Reproducibility:** Ensures that the same data preprocessing steps
+#         are applied consistently across experiments.
+
+# LLM Pipeline Fit:
+#     This file is included by the main `config.yaml` via Hydra's `defaults` mechanism.
+#     The parameters defined here are loaded into the `DataConfig` dataclass within
+#     the Python application, which then guides the `WikiTextDataset` and `create_dataloaders`
+#     functions in the `llm_pipeline.data` module.
+# """
+
+# WikiText-2 dataset configuration parameters. These map directly to fields
+# in the `DataConfig` dataclass (`src/llm_pipeline/config/config.py`).
+
+dataset_name: "wikitext"            # The name of the dataset to be loaded from Hugging Face Datasets.
+dataset_config: "wikitext-2-raw-v1" # The specific configuration/version of the WikiText dataset.
+train_split: "train"                # The name of the dataset split to use for training.
+validation_split: "validation"      # The name of the dataset split to use for validation.
+test_split: "test"                  # The name of the dataset split to use for testing/final evaluation.
+
+# Preprocessing parameters for tokenization and sequence creation.
+max_seq_length: 512             # The maximum length of tokenized sequences. Sequences longer than this will be truncated or chunked.
+min_seq_length: 10              # The minimum length of tokenized sequences. Shorter sequences might be filtered out.
+preprocessing_num_workers: 4    # Number of workers to use for parallel data preprocessing (e.g., tokenization).
+preprocessing_batch_size: 1000  # Batch size for processing examples during the dataset mapping/preprocessing step.
+
+# DataLoader specific parameters (how data is loaded into the model during training/evaluation).
+num_workers: 4                  # Number of subprocesses to use for data loading in the PyTorch DataLoader.
+pin_memory: true                # If true, the DataLoader will copy Tensors into CUDA pinned memory for faster GPU transfers.
+drop_last: true                 # If true, the last incomplete batch in the DataLoader will be dropped. This ensures all batches have the same size.
+
+# Caching settings for processed datasets.
+cache_dir: "./cache"            # Directory where processed datasets will be cached. Relative to the run directory.
+use_cache: true                 # Whether to use caching for the preprocessed dataset. If true, subsequent runs will load from cache.

@@ -1,0 +1,53 @@
+# filename: src/llm_pipeline/config/hydra/data/wikitext103.yaml
+# """
+# Configuration for the WikiText-103 dataset.
+
+# This YAML file specifies the parameters for loading and preprocessing the
+# WikiText-103 dataset, a larger version of WikiText, often used for more
+# extensive language model training. It defines dataset splits, sequence length
+# constraints, multiprocessing settings, and specific batch sizes tailored for
+# this larger dataset.
+
+# Purpose:
+#     To encapsulate all data-specific configuration for the WikiText-103 dataset.
+#     This allows for easy switching between different datasets (e.g., WikiText-2 vs. WikiText-103)
+#     by simply changing the `data` default in the main `config.yaml` or via command-line override.
+#
+#     This configuration is crucial for:
+#     1.  **Scaling Experiments:** Provides settings for a larger, more realistic dataset.
+#     2.  **Data Consistency:** Ensures the same preprocessing steps are applied to
+#         WikiText-103 across different training runs.
+#     3.  **Performance Optimization:** Configures `num_workers` and `preprocessing_batch_size`
+#         to handle the larger data volume efficiently.
+#     4.  **Reproducibility:** Guarantees that data preparation is consistent.
+
+# LLM Pipeline Fit:
+#     This file is designed to be composed by the main `config.yaml` through Hydra.
+#     The parameters defined here populate the `DataConfig` dataclass in the Python
+#     code, guiding the `WikiTextDataset` and `create_dataloaders` functions
+#     within the `llm_pipeline.data` module to correctly load and prepare the WikiText-103 data.
+# """
+
+# WikiText-103 dataset configuration parameters. These map directly to fields
+# in the `DataConfig` dataclass (`src/llm_pipeline/config/config.py`).
+
+dataset_name: "wikitext"              # The name of the dataset to be loaded from Hugging Face Datasets.
+dataset_config: "wikitext-103-raw-v1" # The specific configuration/version of the WikiText dataset (the larger one).
+train_split: "train"                  # The name of the dataset split to use for training.
+validation_split: "validation"        # The name of the dataset split to use for validation.
+test_split: "test"                    # The name of the dataset split to use for testing/final evaluation.
+
+# Preprocessing parameters for tokenization and sequence creation.
+max_seq_length: 512                 # The maximum length of tokenized sequences.
+min_seq_length: 10                  # The minimum length of tokenized sequences.
+preprocessing_num_workers: 8        # Number of workers for parallel data preprocessing. Increased for larger dataset.
+preprocessing_batch_size: 1000      # Batch size for internal dataset mapping operations.
+
+# DataLoader specific parameters for PyTorch.
+num_workers: 8                      # Number of subprocesses for data loading. Increased for larger dataset.
+pin_memory: true                    # Pin memory for faster GPU transfers.
+drop_last: true                     # Drop the last incomplete batch.
+
+# Caching settings.
+cache_dir: "./cache/wikitext103"    # Custom cache directory specific to WikiText-103 to avoid conflicts with other datasets.
+use_cache: true                     # Enable caching for the preprocessed dataset.

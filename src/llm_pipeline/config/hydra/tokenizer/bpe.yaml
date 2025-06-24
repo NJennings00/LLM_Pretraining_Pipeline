@@ -1,0 +1,53 @@
+# filename: src/llm_pipeline/config/hydra/tokenizer/bpe.yaml
+# """
+# Configuration for a Byte-Pair Encoding (BPE) tokenizer.
+
+# This YAML file specifies the parameters for training or loading a BPE tokenizer,
+# including its vocabulary size, minimum token frequency, special tokens, and
+# various processing options like prefix space handling and case sensitivity.
+
+# Purpose:
+#     To encapsulate all tokenizer-specific configuration when using the BPE algorithm.
+#     This allows for easy switching between different tokenizer types (e.g., BPE, WordPiece, Unigram)
+#     by simply changing the `tokenizer` default in the main `config.yaml` or via command-line override.
+#
+#     This configuration is crucial for:
+#     1.  **Tokenization Definition:** Explicitly defines how text will be segmented into tokens.
+#     2.  **Vocabulary Control:** Sets the target vocabulary size and minimum frequency for token inclusion.
+#     3.  **Special Token Handling:** Ensures consistent use of padding, unknown, BOS, EOS, and mask tokens.
+#     4.  **Preprocessing Nuances:** Controls subtle but important aspects like adding prefix spaces or lowercasing.
+#     5.  **Reproducibility:** Guarantees that the same tokenization rules are applied consistently.
+
+# LLM Pipeline Fit:
+#     This file is designed to be composed by the main `config.yaml` through Hydra.
+#     The parameters defined here directly populate the `TokenizerConfig` dataclass
+#     in the Python code (`src/llm_pipeline/config/config.py`), which is then
+#     used by the `build_tokenizer` and `TokenizerWrapper` functions in
+#     `llm_pipeline.tokenization` to create, load, and apply the tokenizer.
+#     The `vocab_size` here is critical as it must match the `vocab_size` specified
+#     in the `ModelConfig`.
+# """
+
+# Tokenizer configuration parameters. These map directly to fields
+# in the `TokenizerConfig` dataclass (`src/llm_pipeline/config/config.py`).
+
+tokenizer_type: bpe                 # The type of tokenizer to use: 'bpe', 'wordpiece', or 'unigram'.
+vocab_size: 32000                   # The target size of the tokenizer's vocabulary. This should ideally match `ModelConfig.vocab_size`.
+min_frequency: 2                    # Minimum frequency a token must have in the training data to be included in the vocabulary during tokenizer training.
+
+# Special tokens essential for model training and inference.
+pad_token: "<pad>"                  # Token used for padding sequences to a uniform length.
+unk_token: "<unk>"                  # Token used for out-of-vocabulary words (unknown tokens).
+bos_token: "<bos>"                  # Beginning-of-sentence token.
+eos_token: "<eos>"                  # End-of-sentence token.
+mask_token: "<mask>"                # Mask token, typically used in masked language modeling tasks (e.g., BERT).
+
+# Behavior flags for tokenizer preprocessing.
+add_prefix_space: true              # If true, a space is added to the beginning of the text during tokenization. Common for BPE.
+lowercase: false                    # If true, the text is lowercased before tokenization.
+strip_accents: false                # If true, accents are removed from characters before tokenization.
+
+# Tokenizer training and file management.
+train_tokenizer: true               # If true, a new tokenizer will be trained if `tokenizer_file` is null or doesn't exist.
+tokenizer_file: null                # Path to a pre-trained tokenizer file (.json, .model). If null, a new one might be trained and saved.
+                                    # This should be populated programmatically or via CLI override, e.g., `${hydra:runtime.output_dir}/tokenizer.json`.

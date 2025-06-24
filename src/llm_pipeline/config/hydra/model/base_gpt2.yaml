@@ -1,0 +1,57 @@
+# filename: src/llm_pipeline/config/hydra/model/base_gpt2.yaml
+# """
+# Configuration for a base GPT-2 style transformer model.
+
+# This YAML file defines the architectural parameters for a standard GPT-2-like
+# transformer model, including its size, number of layers, attention heads,
+# dropout rates, and other hyper-parameters. This serves as a foundational
+# model configuration that can be composed with other training setups.
+
+# Purpose:
+#     To provide a modular and reusable definition of a common transformer
+#     architecture. This allows easy experimentation with different model
+#     sizes by swapping this config with others (e.g., `small_gpt2.yaml`, `large_gpt2.yaml`).
+#
+#     This configuration is crucial for:
+#     1.  **Model Definition:** Explicitly defines the neural network's architecture.
+#     2.  **Reproducibility:** Ensures that the same model architecture is
+#         instantiated consistently across different training runs.
+#     3.  **Experimentation:** Simplifies switching between various model sizes
+#         or architectural variants.
+
+# LLM Pipeline Fit:
+#     This file is designed to be composed by the main `config.yaml` through Hydra.
+#     The parameters defined here directly populate the `ModelConfig` dataclass
+#     in the Python code (`src/llm_pipeline/config/config.py`), which is then
+#     used by the `TransformerLM` class in `llm_pipeline.models` to build the
+#     neural network.
+# """
+
+# Model architecture configuration parameters. These map directly to fields
+# in the `ModelConfig` dataclass (`src/llm_pipeline/config/config.py`).
+
+model_type: gpt2                  # Specifies the general type/family of the model (e.g., GPT-2, BERT, Transformer).
+vocab_size: 32000                 # Size of the vocabulary. This should match the tokenizer's vocabulary size.
+hidden_size: 768                  # Dimensionality of the embeddings and the feed-forward layers in the transformer blocks.
+num_hidden_layers: 12             # The number of transformer encoder/decoder layers in the model.
+num_attention_heads: 12           # The number of attention heads for each attention layer in the model.
+intermediate_size: 3072           # The dimensionality of the "intermediate" (feed-forward) layer in the transformer block.
+max_position_embeddings: 1024     # The maximum sequence length the model can handle due to its positional embeddings.
+
+# Dropout probabilities used for regularization within the model.
+hidden_dropout_prob: 0.1          # The dropout probability for all fully connected layers in the embeddings and encoder.
+attention_probs_dropout_prob: 0.1 # The dropout ratio for the attention probabilities.
+embedding_dropout_prob: 0.1       # The dropout ratio for the embeddings.
+
+# Layer normalization and weight initialization parameters.
+layer_norm_eps: 1e-12             # The epsilon value for the layer normalization layers.
+initializer_range: 0.02           # The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
+use_cache: true                   # Whether the model should return the last key/values attention (usually for faster generation).
+
+# Attention mechanism specifics.
+attention_type: standard          # The type of attention mechanism to use (e.g., 'standard', 'flash', 'sparse').
+use_rotary_embeddings: false      # Whether to use Rotary Positional Embeddings (RoPE) instead of absolute positional embeddings.
+
+# Activation function.
+hidden_act: gelu                  # The activation function to use in the feed-forward layers (e.g., 'gelu', 'relu', 'swish').
+tie_word_embeddings: true         # Whether to tie the input embeddings and the output word embeddings.

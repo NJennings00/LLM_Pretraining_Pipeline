@@ -1,0 +1,76 @@
+# filename: src/llm_pipeline/config/hydra/training/standard.yaml
+# """
+# Standard training configuration for the LLM pipeline.
+
+# This YAML file defines a set of balanced and commonly used hyperparameters for
+# training a language model. It aims to provide a good starting point for
+# most training runs, balancing performance and resource usage.
+
+# Purpose:
+#     To encapsulate a reasonable default set of training parameters that can be
+#     easily selected or overridden. This configuration represents a typical
+#     training setup for common LLM pretraining tasks.
+#
+#     This configuration is crucial for:
+#     1.  **Baseline Performance:** Provides a known good configuration to start
+#         experiments or benchmark against.
+#     2.  **Modularity:** Allows switching between different training strategies
+#         (e.g., 'standard', 'debug', 'large_scale') by changing a single Hydra default.
+#     3.  **Reproducibility:** Ensures that standard training runs can be consistently
+#         reproduced.
+#     4.  **Clarity:** Clearly defines common hyperparameters in one place.
+
+# LLM Pipeline Fit:
+#     This file is designated as the default `training` configuration in the main
+#     `config.yaml` (`defaults: - training: standard`). When loaded by Hydra,
+#     its parameters populate the `TrainingConfig` dataclass in the Python code
+#     (`src/llm_pipeline/config/config.py`). The `Trainer` class then utilizes
+#     these settings to conduct the model training, including optimization,
+#     scheduling, evaluation, and checkpointing.
+# """
+
+# Standard training configuration parameters. These map directly to fields
+# in the `TrainingConfig` dataclass (`src/llm_pipeline/config/config.py`).
+
+# Basic training control.
+num_train_epochs: 3             # Train for 3 full epochs.
+max_steps: -1                   # No maximum number of steps; training runs for `num_train_epochs`.
+gradient_accumulation_steps: 1  # No gradient accumulation; gradients are updated every batch.
+train_batch_size: 4             # Batch size per device during training. 
+eval_batch_size: 8              # Batch size per device during evaluation. 
+
+# Optimization parameters for the AdamW optimizer.
+learning_rate: 5e-4             # Initial learning rate. A common value for transformer training.
+weight_decay: 0.01              # L2 regularization to prevent overfitting.
+adam_beta1: 0.9                 # Beta1 hyperparameter for Adam optimizer.
+adam_beta2: 0.999               # Beta2 hyperparameter for Adam optimizer.
+adam_epsilon: 1e-8              # Epsilon value for numerical stability in Adam.
+max_grad_norm: 1.0              # Gradient clipping norm to prevent exploding gradients.
+
+# Learning rate scheduler settings.
+lr_scheduler_type: cosine       # Use a cosine learning rate annealing schedule.
+warmup_steps: 500               # Perform a linear warmup for the first 500 steps.
+
+# Mixed precision and memory optimization settings.
+fp16: false                     # Disable float16 (mixed precision) training by default.
+bf16: false                     # Disable bfloat16 (mixed precision) training by default.
+gradient_checkpointing: false   # Disable gradient checkpointing to save memory by default.
+
+# Evaluation and checkpoint saving frequencies.
+eval_steps: 500                 # Evaluate the model every 500 training steps.
+eval_strategy: steps            # Evaluation is performed based on steps, not epochs.
+save_steps: 1000                # Save a model checkpoint every 1000 training steps.
+save_strategy: steps            # Checkpoint saving is performed based on steps.
+save_total_limit: 3             # Keep only the 3 most recent model checkpoints.
+
+# Logging frequencies.
+logging_steps: 50               # Log training metrics to console/backends every 50 steps.
+logging_first_step: true        # Log metrics at the very first training step.
+
+# Reproducibility settings.
+seed: 42                        # Global random seed for reproducibility.
+deterministic: true             # Attempt to ensure deterministic algorithms where possible.
+
+# Output directory for checkpoints.
+# `${hydra:runtime.output_dir}` refers to the unique run directory created by Hydra.
+output_dir: ${hydra:runtime.output_dir}/checkpoints

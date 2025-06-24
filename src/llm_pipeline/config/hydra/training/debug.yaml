@@ -1,0 +1,77 @@
+# filename: src/llm_pipeline/config/hydra/training/debug.yaml
+# """
+# Debug training configuration for the LLM pipeline.
+
+# This YAML file defines a minimal set of training parameters designed for
+# quick debugging, testing, or verifying the pipeline's functionality.
+# It uses very short training runs (1 epoch, 100 steps) and small batch sizes.
+
+# Purpose:
+#     To provide a lightweight training configuration that allows developers
+#     to rapidly iterate and test changes to the model, data pipeline, or
+#     training logic without waiting for long training runs.
+#
+#     This configuration is crucial for:
+#     1.  **Rapid Development:** Significantly reduces the time required for
+#         each experimental iteration.
+#     2.  **Smoke Testing:** Allows for quick verification that all parts of the
+#         training pipeline are correctly connected and functional.
+#     3.  **Resource Efficiency:** Consumes minimal compute resources, making it
+#         suitable for local development environments or CI/CD pipelines.
+#     4.  **Reproducibility (Debug Context):** Ensures consistent behavior for debugging specific issues.
+
+# LLM Pipeline Fit:
+#     This file is designed to be composed by the main `config.yaml` through Hydra.
+#     When `training: debug` is specified (e.g., `python train.py training=debug`),
+#     these parameters override the default training settings. They populate the
+#     `TrainingConfig` dataclass in the Python code (`src/llm_pipeline/config/config.py`),
+#     which is then used by the `Trainer` class to control the training loop.
+# """
+
+# Debug training configuration parameters. These map directly to fields
+# in the `TrainingConfig` dataclass (`src/llm_pipeline/config/config.py`).
+
+# Basic training parameters, significantly reduced for debugging.
+num_train_epochs: 1                 # Train for only 1 epoch.
+max_steps: 100                      # Limit training to a maximum of 100 steps.
+gradient_accumulation_steps: 1      # No gradient accumulation, update every step.
+train_batch_size: 2                 # Very small training batch size per device.
+eval_batch_size: 4                  # Small evaluation batch size.
+
+# Optimization parameters (learning rate, weight decay, Adam optimizer specifics).
+learning_rate: 1e-3                 # A common default learning rate.
+weight_decay: 0.01                  # Standard weight decay for regularization.
+adam_beta1: 0.9                     # Beta1 parameter for Adam optimizer.
+adam_beta2: 0.999                   # Beta2 parameter for Adam optimizer.
+adam_epsilon: 1e-8                  # Epsilon parameter for Adam optimizer.
+max_grad_norm: 1.0                  # Maximum gradient norm for clipping.
+
+# Learning rate scheduler settings.
+lr_scheduler_type: "linear"         # Use a simple linear learning rate decay.
+warmup_steps: 10                    # Very short warmup period for learning rate.
+warmup_ratio: 0.0                   # No ratio-based warmup.
+
+# Mixed precision training flags. Disabled for debugging to simplify troubleshooting.
+fp16: false                         # Disable mixed precision training with float16.
+bf16: false                         # Disable mixed precision training with bfloat16.
+
+# Evaluation and checkpoint saving frequencies. Set to small values for frequent feedback.
+eval_steps: 50                      # Evaluate model every 50 steps.
+eval_strategy: "steps"              # Evaluation strategy based on steps.
+save_steps: 100                     # Save model checkpoint every 100 steps (at the end of max_steps).
+save_strategy: "steps"              # Checkpoint saving strategy based on steps.
+save_total_limit: 2                 # Keep only the 2 most recent checkpoints.
+
+# Logging frequencies.
+logging_steps: 10                   # Log metrics every 10 steps.
+logging_first_step: true            # Log metrics at the very first training step.
+
+# Reproducibility settings.
+seed: 42                            # Random seed for reproducibility.
+deterministic: true                 # Ensure deterministic operations where possible.
+
+# DataLoader workers for training. Set to 0 for single-process loading, easier debugging.
+dataloader_num_workers: 0
+
+# Output directory for debug runs.
+output_dir: "./outputs/experiments" # Specify a generic experiments folder for debug runs.

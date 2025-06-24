@@ -1,0 +1,94 @@
+# filename: src/llm_pipeline/config/hydra/config.yaml
+
+# Default Hydra configuration for the LLM pipeline.
+
+# This file serves as the main entry point for Hydra's configuration composition.
+# It defines the default configuration for a training run by listing other
+# configuration files (or groups) to be included.
+
+# Purpose:
+#     To provide a baseline, composable configuration for the entire LLM pipeline.
+#     When `train_command` (or other CLI commands) is executed via Hydra, this
+#     `config.yaml` is loaded first, and then it pulls in other specific configurations
+#     for data, model, training, and tokenizer. This modular approach allows easy
+#     overriding and experimentation.
+#
+#     This file is crucial for:
+#     1.  **Modularity:** It allows breaking down a complex configuration into
+#         smaller, manageable, and reusable pieces (e.g., `data/wikitext2.yaml`,
+#         `model/small_gpt2.yaml`).
+#     2.  **Defaults Management:** It sets sensible defaults for a typical training run.
+#     3.  **Experiment Tracking Integration:** Configures Hydra's output directory
+#         structure and integrates with logging tools like TensorBoard.
+#     4.  **Reproducibility:** Ensures that every run starts from a defined
+#         set of parameters, even when overrides are applied.
+
+# LLM Pipeline Fit:
+#     This file is the *core* Hydra configuration that the `train.py` (and potentially
+#     `evaluate.py`, `preprocess.py`) script loads. It orchestrates which specific
+#     `data`, `model`, `training`, and `tokenizer` configurations are used by default,
+#     and how the output directories and basic logging are set up for each experiment.
+
+
+# `defaults` section: This is Hydra's mechanism for composing configurations.
+# It specifies a list of config groups and default config files within those groups.
+defaults:
+  - data: wikitext2       # Use the 'wikitext2.yaml' file from the 'data' config group.
+                          # This will load data-related configurations.
+  - model: small_gpt2     # Use the 'small_gpt2.yaml' file from the 'model' config group.
+                          # This will load model architecture configurations.
+  - training: standard    # Use the 'standard.yaml' file from the 'training' config group.
+                          # This will load general training hyperparameters.
+  - tokenizer: bpe        # Use the 'bpe.yaml' file from the 'tokenizer' config group.
+                          # This will load tokenizer-specific configurations.
+  - _self_                # This special keyword means that parameters defined directly
+                          # in *this* `config.yaml` file (below the `defaults` section)
+                          # are also included in the final composed configuration.
+
+# `hydra` section: Configures Hydra's behavior, especially regarding output directories
+# and how run/sweep directories are named.
+hydra:
+  run:
+    # `dir`: Defines the output directory for a single run.
+    # `${now:%Y-%m-%d}` and `${now:%H-%M-%S}` are Hydra interpolations that
+    # insert the current date and time, ensuring unique directories for each run.
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    # `dir`: Defines the base directory for multi-run sweeps (e.g., hyperparameter search).
+    dir: multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    # `subdir`: Defines the subdirectory within the sweep directory for each individual job.
+    # `${hydra.job.num}` is a special Hydra variable that assigns a unique number to each job in a sweep.
+    subdir: ${hydra.job.num}
+  job:
+    config:
+      # `override_dirname`: Controls how the directory name for a job is generated based on overrides.
+      # This helps in quickly identifying what changed in a run's name.
+      override_dirname:
+        # `exclude_keys`: A list of config keys to *exclude* from the generated directory name.
+        # This prevents common defaults (like the base data, model, training, tokenizer types)
+        # from cluttering the directory name unless they are explicitly overridden.
+        exclude_keys:
+          - data      # Exclude the `data` config group's name from the directory name.
+          - model     # Exclude the `model` config group's name.
+          - training  # Exclude the `training` config group's name.
+          - tokenizer # Exclude the `tokenizer` config group's name.
+
+# `logging` section: Configures basic logging behavior, which will be accessible
+# via the `LoggingConfig` dataclass in the Python code.
+logging:
+  use_tensorboard: true # Enable TensorBoard logging by default.
+  use_wandb: false      # Disable Weights & Biases logging by default.
+  # `tensorboard_dir`: Path for TensorBoard logs.
+  # `${hydra:runtime.output_dir}` is a Hydra interpolation that refers to the
+  # root output directory for the current run (e.g., `outputs/YYYY-MM-DD/HH-MM-SS`).
+  tensorboard_dir: ${hydra:runtime.output_dir}/tensorboard
+  log_level: INFO       # Set the default logging level to INFO.
+  log_to_file: true     # Enable logging output to a file.
+  # `log_file`: Path for the main training log file.
+  log_file: ${hydra:runtime.output_dir}/training.log
+
+
+
+
+
+
